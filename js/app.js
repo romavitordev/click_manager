@@ -310,6 +310,10 @@ function getSessionsForDate(dateString) {
     return state.sessions.filter((session) => session.date === dateString);
 }
 
+function getSortedSessionsForDate(dateString) {
+    return [...getSessionsForDate(dateString)].sort((left, right) => (left.time || "").localeCompare(right.time || ""));
+}
+
 function getAvailabilityForDate(dateString) {
     const date = new Date(`${dateString}T12:00:00`);
     const weekday = date.getDay();
@@ -1029,9 +1033,10 @@ function renderAgendaCalendar() {
         }
 
         const dateString = currentDate.toISOString().split("T")[0];
-        const sessions = getSessionsForDate(dateString);
+        const sessions = getSortedSessionsForDate(dateString);
         const availability = getAvailabilityForDate(dateString);
         const isSelected = state.selectedAgendaDate === dateString;
+        const visibleSessions = sessions.slice(0, 2);
 
         calendarDays.push(`
             <button
@@ -1047,6 +1052,12 @@ function renderAgendaCalendar() {
                         : `<span class="calendar-chip">${weekdayNames[currentDate.getDay()].slice(0, 3)} bloqueado</span>`
                     }
                 </div>
+                ${sessions.length ? `
+                    <div class="calendar-day__sessions">
+                        ${visibleSessions.map((session) => `<span class="calendar-day__session-time">${session.time} · ${session.client}</span>`).join("")}
+                        ${sessions.length > visibleSessions.length ? `<span class="calendar-day__session-time">+${sessions.length - visibleSessions.length} ensaio${sessions.length - visibleSessions.length > 1 ? "s" : ""}</span>` : ""}
+                    </div>
+                ` : ""}
             </button>
         `);
     }
@@ -1065,14 +1076,25 @@ function renderSelectedDateAvailability() {
     const label = document.getElementById("selectedDateLabel");
     const status = document.getElementById("selectedDateStatus");
     const slotsRoot = document.getElementById("clientAvailabilitySlots");
-    if (!label || !status || !slotsRoot) {
+    const sessionsRoot = document.getElementById("selectedDateSessions");
+    if (!label || !status || !slotsRoot || !sessionsRoot) {
         return;
     }
 
     const dateString = state.selectedAgendaDate;
-    const sessions = getSessionsForDate(dateString);
+    const sessions = getSortedSessionsForDate(dateString);
     const availability = getAvailabilityForDate(dateString);
     label.textContent = formatDateLabel(dateString);
+
+    sessionsRoot.innerHTML = sessions.length
+        ? sessions.map((session) => `
+            <div class="session-summary-card">
+                <strong>${session.title}</strong>
+                <div class="client-meta">${session.time} · ${session.client}</div>
+                <div class="client-meta">${session.location || "Local não informado"} · ${session.status}</div>
+            </div>
+        `).join("")
+        : `<span class="slot-chip is-disabled">Nenhum ensaio marcado para este dia</span>`;
 
     if (!availability.enabled) {
         status.textContent = "Este dia está fechado na agenda do fotógrafo.";
@@ -1367,6 +1389,39 @@ function setupSettings() {
         }
     });
 
+    const getSnapshot = () => JSON.stringify(fields.map((field) => {
+        const input = form.elements[field];
+        return input?.type === "checkbox" ? Boolean(input.checked) : String(input?.value ?? "");
+    }));
+
+    let savedSnapshot = getSnapshot();
+    let bypassNavigationWarning = false;
+
+    const confirmDiscardChanges = () => {
+        if (bypassNavigationWarning || getSnapshot() === savedSnapshot) {
+            return true;
+        }
+        return window.confirm("Você tem alterações não salvas. Tem certeza que deseja sair sem salvar?");
+    };
+
+    window.addEventListener("beforeunload", (event) => {
+        if (bypassNavigationWarning || getSnapshot() === savedSnapshot) {
+            return;
+        }
+        event.preventDefault();
+        event.returnValue = "";
+    });
+
+    document.querySelectorAll("a[href]").forEach((link) => {
+        link.addEventListener("click", (event) => {
+            if (confirmDiscardChanges()) {
+                bypassNavigationWarning = true;
+                return;
+            }
+            event.preventDefault();
+        });
+    });
+
     updateSettingsSummary();
 
     form.addEventListener("submit", (event) => {
@@ -1403,6 +1458,7 @@ function setupSettings() {
         writeStorage(STORAGE_KEYS.profile, state.profile);
         persistSettings();
         updateSettingsSummary();
+        savedSnapshot = getSnapshot();
         feedback.textContent = "Todas as configurações foram salvas.";
         feedback.style.color = "var(--success)";
 

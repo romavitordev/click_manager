@@ -308,6 +308,17 @@
     background: rgba(248, 250, 252, 0.9);
 }
 
+.stack-item--link {
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stack-item--link:hover,
+.stack-item--link:focus-visible {
+    transform: translateY(-1px);
+    border-color: rgba(37, 99, 235, 0.28);
+    box-shadow: 0 14px 28px rgba(37, 99, 235, 0.12);
+}
+
 .stack-item strong,
 .session-item strong,
 .client-item strong {
@@ -846,6 +857,12 @@
     gap: 10px;
 }
 
+#calendarMonthLabel {
+    background: rgba(15, 23, 42, 0.9);
+    color: #f8fafc;
+    border-color: rgba(15, 23, 42, 0.92);
+}
+
 .calendar-weekdays,
 .calendar-grid {
     display: grid;
@@ -862,7 +879,7 @@
 
 .calendar-day {
     width: 100%;
-    min-height: 88px;
+    min-height: 124px;
     padding: 10px;
     border-radius: 18px;
     border: 1px solid rgba(148, 163, 184, 0.18);
@@ -891,7 +908,8 @@
 }
 
 .calendar-day.is-session {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(124, 58, 237, 0.12));
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.22), rgba(124, 58, 237, 0.18));
+    border-color: rgba(37, 99, 235, 0.3);
 }
 
 .calendar-day.is-unavailable {
@@ -908,6 +926,28 @@
     display: grid;
     gap: 6px;
     margin-top: 8px;
+}
+
+.calendar-day__sessions {
+    display: grid;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.calendar-day__session-time {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    padding: 4px 8px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.08);
+    color: var(--text);
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.calendar-day.is-session .calendar-day__session-time {
+    background: rgba(255, 255, 255, 0.75);
 }
 
 .calendar-chip {
@@ -1072,6 +1112,15 @@
     color: #94a3b8;
 }
 
+.session-summary-card {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    background: rgba(248, 250, 252, 0.92);
+}
+
 .bar {
     display: grid;
     align-content: end;
@@ -1140,4 +1189,3 @@
         margin-left: var(--sidebar-width);
     }
 }
-
