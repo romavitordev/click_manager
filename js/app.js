@@ -1930,7 +1930,9 @@ async function renderPortfolio() {
     }
 
     const records = await getPortfolioRecords();
-    countBadge.textContent = `${records.length} imagem${records.length !== 1 ? "ens" : ""}`;
+    const count = records.length;
+    const label = count === 1 ? 'Imagem' : 'Imagens';
+    countBadge.textContent = `${count} ${label}`;
     emptyState.hidden = records.length !== 0;
 
     portfolioGrid.innerHTML = records.map((photo) => {
