@@ -7,7 +7,8 @@
     settings: "click_manager_settings",
     users: "click_manager_users",
     currentUser: "click_manager_current_user",
-    contracts: "click_manager_contracts"
+    contracts: "click_manager_contracts",
+    sessionGalleries: "click_manager_session_galleries"
 };
 
 const defaultSettings = {
@@ -60,7 +61,7 @@ const photoPalette = [
 ];
 
 const pricePerPhoto = 35;
-const defaultSlots = ["09:00", "11:30", "15:00", "17:00"];
+const defaultSlots = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19:00"];
 const weekdayNames = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 const state = {
     clients: readStorage(STORAGE_KEYS.clients, []),
@@ -69,6 +70,7 @@ const state = {
     users: readStorage(STORAGE_KEYS.users, []),
     currentUser: readStorage(STORAGE_KEYS.currentUser, null),
     contracts: readStorage(STORAGE_KEYS.contracts, []),
+    sessionGalleries: readStorage(STORAGE_KEYS.sessionGalleries, {}),
     profile: readStorage(STORAGE_KEYS.profile, {
         sessionPrice: 0,
         monthlyAverageSessions: 0
@@ -86,11 +88,11 @@ const state = {
 function createDefaultAvailability() {
     return {
         0: { enabled: false, slots: [] },
-        1: { enabled: true, slots: ["09:00", "11:30", "15:00", "17:00"] },
-        2: { enabled: true, slots: ["09:00", "11:30", "15:00", "17:00"] },
-        3: { enabled: true, slots: ["09:00", "11:30", "15:00", "17:00"] },
-        4: { enabled: true, slots: ["09:00", "11:30", "15:00", "17:00"] },
-        5: { enabled: false, slots: ["09:00", "11:30"] },
+        1: { enabled: true, slots: [...defaultSlots] },
+        2: { enabled: true, slots: [...defaultSlots] },
+        3: { enabled: true, slots: [...defaultSlots] },
+        4: { enabled: true, slots: [...defaultSlots] },
+        5: { enabled: true, slots: [...defaultSlots] },
         6: { enabled: false, slots: [] }
     };
 }
@@ -153,6 +155,10 @@ function persistCurrentUser() {
 
 function persistSettings() {
     writeStorage(STORAGE_KEYS.settings, state.settings);
+}
+
+function persistSessionGalleries() {
+    writeStorage(STORAGE_KEYS.sessionGalleries, state.sessionGalleries);
 }
 
 function registerUserAccount(payload) {
@@ -314,6 +320,14 @@ function getSortedSessionsForDate(dateString) {
     return [...getSessionsForDate(dateString)].sort((left, right) => (left.time || "").localeCompare(right.time || ""));
 }
 
+function getReadableSessionDate(dateString) {
+    return new Intl.DateTimeFormat("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+    }).format(new Date(`${dateString}T12:00:00`));
+}
+
 function getAvailabilityForDate(dateString) {
     const date = new Date(`${dateString}T12:00:00`);
     const weekday = date.getDay();
@@ -325,6 +339,52 @@ function getAvailabilityForDate(dateString) {
     const bookedSlots = getSessionsForDate(dateString).map((session) => session.time);
     const availableSlots = config.slots.filter((slot) => !bookedSlots.includes(slot));
     return { enabled: true, availableSlots, bookedSlots };
+}
+
+function upsertClientFromSession(session, linkedClient) {
+    const normalizedEmail = (linkedClient?.email || session.clientEmail || "").trim().toLowerCase();
+    const normalizedName = (session.client || "").trim().toLowerCase();
+    const existingIndex = state.clients.findIndex((client) =>
+        (normalizedEmail && client.email.toLowerCase() === normalizedEmail) ||
+        client.name.toLowerCase() === normalizedName
+    );
+
+    const payload = {
+        id: existingIndex >= 0 ? state.clients[existingIndex].id : Date.now(),
+        name: session.client,
+        email: linkedClient?.email || session.clientEmail || `${normalizedName.replace(/\s+/g, ".")}@cliente.local`,
+        type: session.title || "Ensaio",
+        status: "Ativo",
+        lastSession: getReadableSessionDate(session.date)
+    };
+
+    if (existingIndex >= 0) {
+        state.clients[existingIndex] = {
+            ...state.clients[existingIndex],
+            ...payload
+        };
+    } else {
+        state.clients.unshift(payload);
+    }
+
+    writeStorage(STORAGE_KEYS.clients, state.clients);
+}
+
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+    });
+}
+
+function getSessionGalleryItems(sessionId) {
+    return Array.isArray(state.sessionGalleries[sessionId]) ? state.sessionGalleries[sessionId] : [];
+}
+
+function buildSessionShareLink(sessionId) {
+    return new URL(`./galeria.html?session=${encodeURIComponent(String(sessionId))}`, window.location.href).toString();
 }
 
 function buildSvgImage(title, index) {
@@ -925,6 +985,97 @@ function renderDashboard() {
             </div>
         `).join("");
     }
+}
+
+function setupFinancialExport() {
+    const exportButton = document.getElementById("exportFinancialBtn");
+    if (!exportButton) {
+        return;
+    }
+
+    exportButton.addEventListener("click", () => {
+        const currentMonthSessions = getCurrentMonthSessions();
+        const pendingPaymentItems = getPendingPayments();
+        const completedRevenue = currentMonthSessions
+            .filter((session) => session.paymentStatus === "Pago")
+            .reduce((sum, session) => sum + getSessionPrice(session), 0);
+        const estimatedRevenue = state.profile.sessionPrice * state.profile.monthlyAverageSessions;
+        const chartMax = Math.max(estimatedRevenue, completedRevenue, 1);
+        const sessionRows = currentMonthSessions.map((session) => `
+            <tr>
+                <td>${session.title}</td>
+                <td>${session.client}</td>
+                <td>${session.date}</td>
+                <td>${session.time}</td>
+                <td>${session.paymentStatus || "Pendente"}</td>
+                <td>${formatCurrency(getSessionPrice(session))}</td>
+            </tr>
+        `).join("");
+
+        const workbookHtml = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">
+            <head>
+                <meta charset="UTF-8">
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
+                    h1, h2 { margin: 0 0 12px; }
+                    table { border-collapse: collapse; width: 100%; margin-bottom: 24px; }
+                    th, td { border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+                    th { background: #e2e8f0; }
+                    .chart { display: flex; gap: 24px; align-items: end; height: 240px; margin: 24px 0; }
+                    .bar { width: 160px; background: linear-gradient(180deg, #2563eb, #7c3aed); color: #fff; text-align: center; font-weight: 700; padding: 12px 8px; }
+                    .label { margin-top: 8px; font-weight: 700; }
+                </style>
+            </head>
+            <body>
+                <h1>Relatório Financeiro - Click Manager</h1>
+                <p>Período: ${new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" }).format(new Date())}</p>
+
+                <table>
+                    <tr><th>Indicador</th><th>Valor</th></tr>
+                    <tr><td>Ensaios no mês</td><td>${currentMonthSessions.length}</td></tr>
+                    <tr><td>Pagamentos pendentes</td><td>${pendingPaymentItems.length}</td></tr>
+                    <tr><td>Receita concluída</td><td>${formatCurrency(completedRevenue)}</td></tr>
+                    <tr><td>Receita estimada</td><td>${formatCurrency(estimatedRevenue)}</td></tr>
+                </table>
+
+                <h2>Gráfico</h2>
+                <div class="chart">
+                    <div>
+                        <div class="bar" style="height:${Math.max(48, (completedRevenue / chartMax) * 220)}px">${formatCurrency(completedRevenue)}</div>
+                        <div class="label">Receita concluída</div>
+                    </div>
+                    <div>
+                        <div class="bar" style="height:${Math.max(48, (estimatedRevenue / chartMax) * 220)}px">${formatCurrency(estimatedRevenue)}</div>
+                        <div class="label">Receita estimada</div>
+                    </div>
+                </div>
+
+                <h2>Ensaios do mês</h2>
+                <table>
+                    <tr>
+                        <th>Título</th>
+                        <th>Cliente</th>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Pagamento</th>
+                        <th>Valor</th>
+                    </tr>
+                    ${sessionRows || '<tr><td colspan="6">Nenhum ensaio registrado no período.</td></tr>'}
+                </table>
+            </body>
+            </html>
+        `;
+
+        const blob = new Blob([workbookHtml], { type: "application/vnd.ms-excel;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `financeiro-click-manager-${new Date().toISOString().slice(0, 10)}.xls`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(link.href);
+    });
 }
 
 function renderAgendaControls() {
@@ -1624,23 +1775,54 @@ function setupSessions() {
         if (sessionForm.elements.price) {
             sessionForm.elements.price.value = state.profile.sessionPrice || "";
         }
-        if (sessionForm.elements.time) {
-            sessionForm.elements.time.value = "10:00";
-        }
+
+        const updateSessionTimeOptions = () => {
+            const timeField = sessionForm.elements.time;
+            const dateValue = sessionForm.elements.date.value;
+            if (!timeField || !(timeField instanceof HTMLSelectElement)) {
+                return;
+            }
+
+            const availability = dateValue ? getAvailabilityForDate(dateValue) : { enabled: false, availableSlots: [] };
+            const allowedSlots = availability.enabled ? availability.availableSlots : [];
+            timeField.innerHTML = allowedSlots.length
+                ? ['<option value="">Selecione um horário</option>']
+                    .concat(allowedSlots.map((slot) => `<option value="${slot}">${slot}</option>`))
+                    .join("")
+                : '<option value="">Nenhum horário disponível para esta data</option>';
+            timeField.disabled = allowedSlots.length === 0;
+        };
+
+        sessionForm.elements.date?.addEventListener("change", updateSessionTimeOptions);
+        updateSessionTimeOptions();
 
         sessionForm.addEventListener("submit", (event) => {
             event.preventDefault();
             const files = Array.from(sessionForm.elements.images.files || []);
+            const sessionDate = sessionForm.elements.date.value;
+            const sessionTime = sessionForm.elements.time.value;
+            const availability = getAvailabilityForDate(sessionDate);
+
+            if (!availability.enabled) {
+                alert("Este dia está bloqueado na agenda do fotógrafo.");
+                return;
+            }
+
+            if (!availability.availableSlots.includes(sessionTime)) {
+                alert("O horário selecionado não está disponível para esta data.");
+                return;
+            }
+
             const linkedClient = state.users.find((user) =>
                 user.role === "client" && user.fullName.toLowerCase() === sessionForm.elements.client.value.trim().toLowerCase()
             );
-            state.sessions.unshift({
+            const sessionRecord = {
                 id: Date.now(),
                 title: sessionForm.elements.title.value.trim(),
                 client: sessionForm.elements.client.value.trim(),
                 clientEmail: linkedClient?.email || "",
-                date: sessionForm.elements.date.value,
-                time: sessionForm.elements.time.value,
+                date: sessionDate,
+                time: sessionTime,
                 location: sessionForm.elements.location.value.trim(),
                 contract: sessionForm.elements.contract.value.trim(),
                 price: Number(sessionForm.elements.price.value || state.profile.sessionPrice || 0),
@@ -1648,13 +1830,18 @@ function setupSessions() {
                 imageCount: files.length,
                 imageNames: files.map((file) => file.name),
                 status: "Novo"
-            });
+            };
+
+            state.sessions.unshift(sessionRecord);
             writeStorage(STORAGE_KEYS.sessions, state.sessions);
+            upsertClientFromSession(sessionRecord, linkedClient);
             renderSessions();
+            renderClients();
             renderDashboard();
             renderAgenda();
             document.getElementById("sessionModal")?.classList.remove("is-open");
             sessionForm.reset();
+            updateSessionTimeOptions();
         });
     }
 }
@@ -1693,8 +1880,8 @@ async function renderPortfolio() {
         return `
         <article class="portfolio-card" data-preview-image="${src}" data-portfolio-id="${photo.id}" draggable="true">
             <div class="portfolio-card__toolbar">
-                <button class="portfolio-card__handle" type="button" aria-label="Arrastar imagem">â‹®â‹®</button>
-                <button class="portfolio-card__delete" type="button" data-delete-portfolio="${photo.id}" aria-label="Remover imagem">âœ•</button>
+                <button class="portfolio-card__handle" type="button" aria-label="Arrastar imagem">::</button>
+                <button class="portfolio-card__delete" type="button" data-delete-portfolio="${photo.id}" aria-label="Remover imagem">x</button>
             </div>
             <img src="${src}" alt="${photo.name}" loading="lazy">
         </article>
@@ -1779,6 +1966,118 @@ function setupPortfolioManager() {
     });
 }
 
+function renderSessionGalleryManager() {
+    const sessionSelect = document.getElementById("sessionGallerySelect");
+    const shareLinkInput = document.getElementById("sessionGalleryShareLink");
+    const shareLinkAnchor = document.getElementById("sessionGalleryShareAnchor");
+    const galleryGrid = document.getElementById("sessionGalleryGrid");
+    const emptyState = document.getElementById("sessionGalleryEmptyState");
+    if (!sessionSelect || !shareLinkInput || !shareLinkAnchor || !galleryGrid || !emptyState) {
+        return;
+    }
+
+    const currentValue = sessionSelect.value;
+
+    sessionSelect.innerHTML = ['<option value="">Selecione um ensaio</option>']
+        .concat(state.sessions.map((session) => `<option value="${session.id}">${session.title} · ${session.client} · ${session.date}</option>`))
+        .join("");
+
+    const selectedSessionId = currentValue || state.sessions[0]?.id || "";
+    if (selectedSessionId) {
+        sessionSelect.value = String(selectedSessionId);
+    }
+
+    const items = selectedSessionId ? getSessionGalleryItems(String(selectedSessionId)) : [];
+    const shareLink = selectedSessionId ? buildSessionShareLink(selectedSessionId) : "";
+    shareLinkInput.value = shareLink;
+    shareLinkAnchor.href = shareLink || "#";
+    shareLinkAnchor.textContent = shareLink ? "Abrir link da galeria" : "Selecione um ensaio para gerar o link";
+
+    galleryGrid.innerHTML = items.map((item) => `
+        <article class="gallery-card">
+            <img src="${item.src}" alt="${item.name}" loading="lazy">
+            <div class="gallery-card__overlay">
+                <div class="watermark">${state.settings.watermarkText || "Click Manager"}</div>
+            </div>
+            <div class="gallery-card__footer">
+                <strong>${item.name}</strong>
+                <button class="btn" type="button" data-delete-session-gallery="${selectedSessionId}|${item.id}">Remover</button>
+            </div>
+        </article>
+    `).join("");
+
+    emptyState.hidden = items.length !== 0;
+
+    galleryGrid.querySelectorAll("[data-delete-session-gallery]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const [sessionId, imageId] = button.dataset.deleteSessionGallery.split("|");
+            state.sessionGalleries[sessionId] = getSessionGalleryItems(sessionId).filter((item) => String(item.id) !== imageId);
+            persistSessionGalleries();
+            renderSessionGalleryManager();
+        });
+    });
+}
+
+function setupSessionGalleryManager() {
+    const sessionSelect = document.getElementById("sessionGallerySelect");
+    const uploadInput = document.getElementById("sessionGalleryUpload");
+    const clearButton = document.getElementById("clearSessionGalleryBtn");
+    const copyButton = document.getElementById("copySessionGalleryLinkBtn");
+    if (!sessionSelect || !uploadInput || !clearButton || !copyButton) {
+        return;
+    }
+
+    sessionSelect.addEventListener("change", renderSessionGalleryManager);
+
+    uploadInput.addEventListener("change", async () => {
+        const sessionId = sessionSelect.value;
+        if (!sessionId) {
+            alert("Selecione um ensaio antes de enviar as imagens.");
+            uploadInput.value = "";
+            return;
+        }
+
+        const files = Array.from(uploadInput.files || []);
+        const existingItems = getSessionGalleryItems(sessionId);
+        for (const file of files) {
+            const src = await readFileAsDataUrl(file);
+            existingItems.push({
+                id: Date.now() + Math.random(),
+                name: file.name,
+                src
+            });
+        }
+        state.sessionGalleries[sessionId] = existingItems;
+        persistSessionGalleries();
+        uploadInput.value = "";
+        renderSessionGalleryManager();
+    });
+
+    clearButton.addEventListener("click", () => {
+        const sessionId = sessionSelect.value;
+        if (!sessionId) {
+            return;
+        }
+        state.sessionGalleries[sessionId] = [];
+        persistSessionGalleries();
+        renderSessionGalleryManager();
+    });
+
+    copyButton.addEventListener("click", async () => {
+        const linkInput = document.getElementById("sessionGalleryShareLink");
+        if (!linkInput?.value) {
+            return;
+        }
+        await navigator.clipboard.writeText(linkInput.value);
+        copyButton.textContent = "Link copiado";
+        window.setTimeout(() => {
+            copyButton.textContent = "Copiar link";
+        }, 1200);
+    });
+
+    renderSessionGalleryManager();
+}
+
 function updatePurchaseSummary() {
     const unitPrice = Number(state.settings.extraPhotoPrice || pricePerPhoto);
     const total = state.gallerySelection.size * unitPrice;
@@ -1807,7 +2106,28 @@ function renderGallery() {
         return;
     }
 
-    deliveryGrid.innerHTML = deliveryPhotos.map((photo) => `
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get("session");
+    const sessionRecord = sessionId ? state.sessions.find((session) => String(session.id) === sessionId) : null;
+    const dynamicPhotos = sessionId
+        ? getSessionGalleryItems(sessionId).map((item) => ({
+            id: item.id,
+            src: item.src,
+            title: item.name
+        }))
+        : [];
+    const activePhotos = sessionId ? dynamicPhotos : deliveryPhotos;
+    const title = document.querySelector(".delivery-header h1");
+    const subtitle = document.querySelector(".delivery-header p");
+
+    if (title && sessionRecord) {
+        title.textContent = `Entrega | ${sessionRecord.title}`;
+    }
+    if (subtitle && sessionRecord) {
+        subtitle.textContent = `Selecione suas fotos favoritas do ensaio de ${sessionRecord.client} e finalize a compra das imagens extras.`;
+    }
+
+    deliveryGrid.innerHTML = activePhotos.map((photo) => `
         <article class="gallery-card ${state.gallerySelection.has(photo.id) ? "is-selected" : ""}" data-photo-id="${photo.id}">
             <img src="${photo.src}" alt="${photo.title}" loading="lazy">
             <div class="gallery-card__overlay">
@@ -1819,7 +2139,7 @@ function renderGallery() {
                 <button class="btn" type="button" data-buy-single="${photo.id}">Comprar individual</button>
             </div>
         </article>
-    `).join("");
+    `).join("") || `<article class="session-summary-card"><strong>Nenhuma imagem enviada</strong><div class="client-meta">O fotógrafo ainda não publicou imagens para este ensaio.</div></article>`;
 
     deliveryGrid.querySelectorAll(".gallery-card").forEach((card) => {
         card.addEventListener("click", (event) => {
@@ -1900,6 +2220,8 @@ function init() {
     safeRun(renderAgenda);
     safeRun(setupSettings);
     safeRun(setupPortfolioManager);
+    safeRun(setupSessionGalleryManager);
+    safeRun(setupFinancialExport);
     safeRun(renderDashboard);
     safeRun(renderClients);
     safeRun(setupClientForm);
@@ -1910,6 +2232,7 @@ function init() {
     safeRun(renderClientDashboard);
     safeRun(renderClientSessions);
     safeRun(renderGallery);
+    safeRun(renderSessionGalleryManager);
     safeRun(updatePurchaseSummary);
     safeRun(setupPurchaseFlow);
 }
