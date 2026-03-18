@@ -15,6 +15,8 @@
     --radius-md: 20px;
     --radius-sm: 14px;
     --sidebar-width: 280px;
+    --font-body: "Instrument Sans", sans-serif;
+    --font-display: "Sora", sans-serif;
 }
 
 * {
@@ -27,13 +29,28 @@ html {
 
 body {
     margin: 0;
-    font-family: "Manrope", sans-serif;
+    font-family: var(--font-body);
     color: var(--text);
     background:
         radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 30%),
         radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 34%),
         var(--bg);
     min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.brand-pill,
+.badge,
+.btn,
+.eyebrow,
+.mobile-bottom-nav__label,
+.mobile-bottom-nav__icon {
+    font-family: var(--font-display);
 }
 
 img {

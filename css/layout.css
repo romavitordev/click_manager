@@ -51,6 +51,29 @@
     gap: 28px;
 }
 
+@media (max-width: 767px) {
+    .auth-shell {
+        gap: 0;
+    }
+
+    .has-mobile-bottom-nav .app-content,
+    .has-mobile-bottom-nav .public-shell {
+        padding-bottom: 98px;
+    }
+
+    .app-content {
+        padding: 18px 14px 32px;
+    }
+
+    .public-shell {
+        padding: 14px 14px 44px;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (min-width: 768px) {
     .auth-shell {
         grid-template-columns: minmax(0, 1.1fr) minmax(420px, 520px);

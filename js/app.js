@@ -387,6 +387,19 @@ function buildSessionShareLink(sessionId) {
     return new URL(`./galeria.html?session=${encodeURIComponent(String(sessionId))}`, window.location.href).toString();
 }
 
+function getMobileNavIcon(name) {
+    const icons = {
+        home: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-5.5h-5V21H5a1 1 0 0 1-1-1z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+        calendar: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M6 5h12a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        users: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 19a4.5 4.5 0 0 0-9 0M11 13a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm8.5 6a4 4 0 0 0-3.5-3.97M16.5 6.5a3 3 0 0 1 0 6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+        camera: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h2l1.2-1.6A1 1 0 0 1 10.5 4h3a1 1 0 0 1 .8.4L15.5 6h2A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.25" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+        settings: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 1.3 2.2 2.5.6.7 2.5 2.2 1.3-2.2 1.3-.7 2.5-2.5.6L12 17l-1.3-2.2-2.5-.6-.7-2.5L5.3 10l2.2-1.3.7-2.5 2.5-.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="10" r="2.4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
+        contracts: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h7l4 4v11a1 1 0 0 1-1 1H8a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 4v4h4M9 12h6M9 16h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>'
+    };
+
+    return icons[name] || icons.home;
+}
+
 function buildSvgImage(title, index) {
     const [start, end] = photoPalette[index % photoPalette.length];
     const svg = `
@@ -401,7 +414,7 @@ function buildSvgImage(title, index) {
             <circle cx="630" cy="170" r="90" fill="rgba(255,255,255,0.18)" />
             <path d="M0 620 C120 520 180 500 320 580 S580 730 800 560 V800 H0 Z" fill="rgba(255,255,255,0.16)" />
             <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-                fill="rgba(255,255,255,0.92)" font-size="54" font-family="Manrope, sans-serif" font-weight="800">
+                fill="rgba(255,255,255,0.92)" font-size="54" font-family="Sora, sans-serif" font-weight="800">
                 ${title}
             </text>
         </svg>
@@ -560,6 +573,51 @@ function setupSidebar() {
     });
 }
 
+function setupMobileBottomNav() {
+    const page = document.body?.dataset.page;
+    if (!page) {
+        return;
+    }
+
+    const photographerNav = [
+        { key: "dashboard", href: "./dashboard.html", label: "Início", icon: "home" },
+        { key: "agenda", href: "./agenda.html", label: "Agenda", icon: "calendar" },
+        { key: "clientes", href: "./clientes.html", label: "Clientes", icon: "users" },
+        { key: "ensaios", href: "./ensaios.html", label: "Ensaios", icon: "camera" },
+        { key: "configuracoes", href: "./configuracoes.html", label: "Ajustes", icon: "settings" }
+    ];
+
+    const clientNav = [
+        { key: "client-dashboard", href: "./dashboard-cliente.html", label: "Início", icon: "home" },
+        { key: "client-contracts", href: "./meus-contratos.html", label: "Contratos", icon: "contracts" },
+        { key: "client-sessions", href: "./meus-ensaios.html", label: "Ensaios", icon: "calendar" }
+    ];
+
+    const navItems = photographerNav.some((item) => item.key === page)
+        ? photographerNav
+        : clientNav.some((item) => item.key === page)
+            ? clientNav
+            : null;
+
+    if (!navItems || document.querySelector(".mobile-bottom-nav")) {
+        return;
+    }
+
+    document.body.classList.add("has-mobile-bottom-nav");
+
+    const nav = document.createElement("nav");
+    nav.className = "mobile-bottom-nav";
+    nav.setAttribute("aria-label", "Navegação principal mobile");
+    nav.innerHTML = navItems.map((item) => `
+        <a class="mobile-bottom-nav__link ${item.key === page ? "is-active" : ""}" href="${item.href}">
+            <span class="mobile-bottom-nav__icon" aria-hidden="true">${getMobileNavIcon(item.icon)}</span>
+            <span class="mobile-bottom-nav__label">${item.label}</span>
+        </a>
+    `).join("");
+
+    document.body.appendChild(nav);
+}
+
 function setupAuth() {
     const loginForm = document.getElementById("loginForm");
     const demoCredentials = {
@@ -598,8 +656,8 @@ function setupAuth() {
                 : "Login validado. Redirecionando para o dashboard.";
             window.setTimeout(() => {
                 window.location.href = user.role === "client"
-                    ? "../pages/dashboard-cliente.html"
-                    : "../pages/dashboard.html";
+                    ? "./pages/dashboard-cliente.html"
+                    : "./pages/dashboard.html";
             }, 900);
             return;
         }
@@ -1880,8 +1938,11 @@ async function renderPortfolio() {
         return `
         <article class="portfolio-card" data-preview-image="${src}" data-portfolio-id="${photo.id}" draggable="true">
             <div class="portfolio-card__toolbar">
-                <button class="portfolio-card__handle" type="button" aria-label="Arrastar imagem">::</button>
-                <button class="portfolio-card__delete" type="button" data-delete-portfolio="${photo.id}" aria-label="Remover imagem">x</button>
+                <button class="portfolio-card__action" type="button" data-preview-portfolio="${photo.id}" aria-label="Visualizar imagem em tamanho maior">&#x26F6;</button>
+                <button class="portfolio-card__action portfolio-card__delete" type="button" data-delete-portfolio="${photo.id}" aria-label="Remover imagem">&times;</button>
+            </div>
+            <div class="portfolio-card__footer">
+                <strong>${photo.name}</strong>
             </div>
             <img src="${src}" alt="${photo.name}" loading="lazy">
         </article>
@@ -1889,7 +1950,10 @@ async function renderPortfolio() {
     }).join("");
 
     portfolioGrid.querySelectorAll("[data-preview-image]").forEach((card) => {
-        card.addEventListener("click", () => {
+        card.addEventListener("click", (event) => {
+            if (event.target.closest("button")) {
+                return;
+            }
             lightboxImage.src = card.dataset.previewImage;
             lightbox.classList.add("is-open");
             lightbox.setAttribute("aria-hidden", "false");
@@ -1932,6 +1996,19 @@ async function renderPortfolio() {
         button.addEventListener("click", () => {
             lightbox.classList.remove("is-open");
             lightbox.setAttribute("aria-hidden", "true");
+        });
+    });
+
+    portfolioGrid.querySelectorAll("[data-preview-portfolio]").forEach((button) => {
+        button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const card = button.closest("[data-preview-image]");
+            if (!card) {
+                return;
+            }
+            lightboxImage.src = card.dataset.previewImage;
+            lightbox.classList.add("is-open");
+            lightbox.setAttribute("aria-hidden", "false");
         });
     });
 
@@ -2213,6 +2290,7 @@ function init() {
     };
 
     safeRun(setupSidebar);
+    safeRun(setupMobileBottomNav);
     safeRun(setupModals);
     safeRun(setupAuth);
     safeRun(setupRegisterWizard);

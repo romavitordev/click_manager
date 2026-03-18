@@ -5,8 +5,34 @@
     margin-bottom: 26px;
 }
 
+.portfolio-header {
+    position: relative;
+    overflow: hidden;
+    padding: 24px;
+    border-radius: 28px;
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(37, 99, 235, 0.76)),
+        var(--surface-accent);
+    color: #f8fafc;
+    box-shadow: 0 24px 46px rgba(15, 23, 42, 0.12);
+}
+
+.portfolio-header::after {
+    content: "";
+    position: absolute;
+    right: -56px;
+    bottom: -80px;
+    width: 220px;
+    height: 220px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.22), transparent 66%);
+    pointer-events: none;
+}
+
 .portfolio-header__content {
     max-width: 720px;
+    position: relative;
+    z-index: 1;
 }
 
 .portfolio-manager,
@@ -119,6 +145,12 @@
     cursor: pointer;
 }
 
+.portfolio-card {
+    min-height: 200px;
+    background: #dbe4f0;
+    box-shadow: 0 18px 30px rgba(15, 23, 42, 0.12);
+}
+
 .portfolio-card img,
 .gallery-card img {
     width: 100%;
@@ -146,15 +178,44 @@
     gap: 8px;
 }
 
-.portfolio-card__handle,
-.portfolio-card__delete {
-    width: 38px;
-    height: 38px;
+.portfolio-card__action {
+    width: 42px;
+    height: 42px;
     border-radius: 12px;
-    border: 0;
-    background: rgba(255, 255, 255, 0.92);
-    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(15, 23, 42, 0.72);
+    color: #fff;
     font-weight: 800;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 10px 18px rgba(15, 23, 42, 0.2);
+}
+
+.portfolio-card__delete {
+    background: rgba(153, 27, 27, 0.82);
+}
+
+.portfolio-card__footer {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1;
+    display: flex;
+    align-items: end;
+    min-height: 72px;
+    padding: 16px 14px 14px;
+    border-radius: 18px;
+    color: #fff;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0), rgba(15, 23, 42, 0.76));
+}
+
+.portfolio-card__footer strong {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    line-height: 1.3;
 }
 
 .gallery-card__overlay {
@@ -208,6 +269,85 @@
     color: var(--text);
 }
 
+.portfolio-header .brand-pill {
+    width: fit-content;
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+.portfolio-header .eyebrow,
+.portfolio-header .instagram-link,
+.portfolio-header p {
+    color: rgba(241, 245, 249, 0.82);
+}
+
+.portfolio-header .instagram-link {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+@media (max-width: 767px) {
+    .has-mobile-bottom-nav .client-nav {
+        display: none;
+    }
+
+    .portfolio-header,
+    .delivery-header,
+    .portfolio-manager,
+    .portfolio-empty {
+        padding: 18px;
+        border-radius: 22px;
+    }
+
+    .client-nav {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .client-nav__link {
+        width: 100%;
+        text-align: center;
+    }
+
+    .portfolio-manager__actions {
+        gap: 12px;
+    }
+
+    .upload-dropzone {
+        min-width: 100%;
+        padding: 16px;
+    }
+
+    .portfolio-grid,
+    .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .portfolio-card,
+    .gallery-card {
+        aspect-ratio: 4 / 5;
+        border-radius: 20px;
+    }
+
+    .portfolio-card__toolbar {
+        top: 10px;
+        right: 10px;
+    }
+
+    .portfolio-card__action {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+    }
+
+    .gallery-card__footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
 @media (min-width: 768px) {
     .portfolio-grid,
     .gallery-grid {
@@ -217,6 +357,12 @@
 
     .portfolio-manager__actions {
         flex-wrap: nowrap;
+    }
+
+    .portfolio-header {
+        grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
+        align-items: end;
+        min-height: 300px;
     }
 
     .delivery-header {
@@ -237,5 +383,9 @@
     .portfolio-grid,
     .gallery-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .portfolio-card {
+        min-height: 240px;
     }
 }
