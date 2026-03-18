@@ -522,7 +522,7 @@ function setupAuth() {
         if (email !== demoCredentials.email || password !== demoCredentials.password) {
             const user = state.users.find((item) => item.email === email && item.password === password);
             if (!user) {
-                feedback.textContent = "Use o login de demonstração ou um cadastro criado na plataforma.";
+                feedback.textContent = "Use a conta de teste ou um cadastro criado na plataforma.";
                 feedback.style.color = "var(--danger)";
                 return;
             }
@@ -542,7 +542,7 @@ function setupAuth() {
 
         state.currentUser = {
             role: "photographer",
-            fullName: "Admin",
+            fullName: "Conta de teste",
             email: demoCredentials.email
         };
         persistCurrentUser();
