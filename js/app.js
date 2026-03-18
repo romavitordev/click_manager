@@ -1341,90 +1341,74 @@ function updateSettingsSummary() {
 }
 
 function setupSettings() {
-    const professionalForm = populateSettingsForm("professionalSettingsForm", [
-        "professionalName", "studioName", "bio", "instagram", "whatsapp", "website", "city"
-    ]);
-    const financialForm = populateSettingsForm("financialSettingsForm", [
-        "sessionPrice", "monthlyAverageSessions", "bookingDeposit", "acceptedPayments", "paymentDeadline"
-    ]);
-    const portfolioForm = populateSettingsForm("portfolioSettingsForm", [
-        "publicName", "publicBio", "publicInstagram"
-    ]);
-    const deliveryForm = populateSettingsForm("deliverySettingsForm", [
-        "watermarkText", "extraPhotoPrice", "galleryExpirationDays"
-    ]);
-    const notificationForm = populateSettingsForm("notificationSettingsForm", [
+    const form = document.getElementById("settingsForm");
+    const feedback = document.getElementById("settingsSaveFeedback");
+    if (!form) {
+        return;
+    }
+
+    const fields = [
+        "professionalName", "studioName", "bio", "instagram", "whatsapp", "website", "city",
+        "sessionPrice", "monthlyAverageSessions", "bookingDeposit", "acceptedPayments", "paymentDeadline",
+        "publicName", "publicBio", "publicInstagram",
+        "watermarkText", "extraPhotoPrice", "galleryExpirationDays",
         "notificationsEmail", "notificationsWhatsapp"
-    ]);
+    ];
+
+    fields.forEach((field) => {
+        const input = form.elements[field];
+        if (!input) {
+            return;
+        }
+        if (input.type === "checkbox") {
+            input.checked = Boolean(state.settings[field]);
+        } else {
+            input.value = state.settings[field] ?? "";
+        }
+    });
 
     updateSettingsSummary();
 
-    professionalForm?.addEventListener("submit", (event) => {
+    form.addEventListener("submit", (event) => {
         event.preventDefault();
-        Object.assign(state.settings, {
-            professionalName: professionalForm.elements.professionalName.value.trim(),
-            studioName: professionalForm.elements.studioName.value.trim(),
-            bio: professionalForm.elements.bio.value.trim(),
-            instagram: professionalForm.elements.instagram.value.trim(),
-            whatsapp: professionalForm.elements.whatsapp.value.trim(),
-            website: professionalForm.elements.website.value.trim(),
-            city: professionalForm.elements.city.value.trim()
-        });
-        persistSettings();
-        updateSettingsSummary();
-    });
 
-    financialForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
         Object.assign(state.settings, {
-            sessionPrice: Number(financialForm.elements.sessionPrice.value || 0),
-            monthlyAverageSessions: Number(financialForm.elements.monthlyAverageSessions.value || 0),
-            bookingDeposit: Number(financialForm.elements.bookingDeposit.value || 0),
-            acceptedPayments: financialForm.elements.acceptedPayments.value.trim(),
-            paymentDeadline: financialForm.elements.paymentDeadline.value.trim()
+            professionalName: form.elements.professionalName.value.trim(),
+            studioName: form.elements.studioName.value.trim(),
+            bio: form.elements.bio.value.trim(),
+            instagram: form.elements.instagram.value.trim(),
+            whatsapp: form.elements.whatsapp.value.trim(),
+            website: form.elements.website.value.trim(),
+            city: form.elements.city.value.trim(),
+            sessionPrice: Number(form.elements.sessionPrice.value || 0),
+            monthlyAverageSessions: Number(form.elements.monthlyAverageSessions.value || 0),
+            bookingDeposit: Number(form.elements.bookingDeposit.value || 0),
+            acceptedPayments: form.elements.acceptedPayments.value.trim(),
+            paymentDeadline: form.elements.paymentDeadline.value.trim(),
+            publicName: form.elements.publicName.value.trim(),
+            publicBio: form.elements.publicBio.value.trim(),
+            publicInstagram: form.elements.publicInstagram.value.trim(),
+            watermarkText: form.elements.watermarkText.value.trim() || "Click Manager",
+            extraPhotoPrice: Number(form.elements.extraPhotoPrice.value || 0),
+            galleryExpirationDays: Number(form.elements.galleryExpirationDays.value || 30),
+            notificationsEmail: form.elements.notificationsEmail.checked,
+            notificationsWhatsapp: form.elements.notificationsWhatsapp.checked
         });
+
         state.profile = {
             sessionPrice: Number(state.settings.sessionPrice || 0),
             monthlyAverageSessions: Number(state.settings.monthlyAverageSessions || 0)
         };
+
         writeStorage(STORAGE_KEYS.profile, state.profile);
         persistSettings();
         updateSettingsSummary();
+        feedback.textContent = "Todas as configurações foram salvas.";
+        feedback.style.color = "var(--success)";
+
         renderDashboard();
-    });
-
-    portfolioForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        Object.assign(state.settings, {
-            publicName: portfolioForm.elements.publicName.value.trim(),
-            publicBio: portfolioForm.elements.publicBio.value.trim(),
-            publicInstagram: portfolioForm.elements.publicInstagram.value.trim()
-        });
-        persistSettings();
-        updateSettingsSummary();
         renderPortfolio();
-    });
-
-    deliveryForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        Object.assign(state.settings, {
-            watermarkText: deliveryForm.elements.watermarkText.value.trim() || "Click Manager",
-            extraPhotoPrice: Number(deliveryForm.elements.extraPhotoPrice.value || 0),
-            galleryExpirationDays: Number(deliveryForm.elements.galleryExpirationDays.value || 30)
-        });
-        persistSettings();
-        updateSettingsSummary();
         renderGallery();
-    });
-
-    notificationForm?.addEventListener("submit", (event) => {
-        event.preventDefault();
-        Object.assign(state.settings, {
-            notificationsEmail: notificationForm.elements.notificationsEmail.checked,
-            notificationsWhatsapp: notificationForm.elements.notificationsWhatsapp.checked
-        });
-        persistSettings();
-        updateSettingsSummary();
     });
 }
 
@@ -1875,4 +1859,3 @@ function init() {
 }
 
 document.addEventListener("DOMContentLoaded", init);
-

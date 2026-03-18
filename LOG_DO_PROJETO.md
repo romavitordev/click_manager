@@ -1,121 +1,110 @@
-# Log Do Projeto - Click Manager
+# Log do Projeto - Click Manager
 
-## 1. Estrutura inicial
-Eu comecei organizando o projeto em uma estrutura mais clara para frontend puro:
-- `index.html` como entrada
-- `pages/` para as páginas internas
-- `css/` para os estilos modulares
-- `js/` para a lógica principal
-- `assets/` para arquivos de apoio
+## Histórico cronológico consolidado
 
-## 2. Tela de acesso
-Eu criei a tela de login e cadastro com foco visual mais moderno, responsivo e simples de usar.
-Depois ajustei o comportamento do cadastro para trocar corretamente entre login e cadastro sem mostrar tudo ao mesmo tempo.
+### 1. Estrutura inicial do projeto
+- organização da base em `index.html`, `pages/`, `css/` e `js/`
+- separação dos estilos em módulos para facilitar manutenção
+- consolidação da lógica do sistema em JavaScript puro
 
-## 3. Dashboard base
-Eu montei o dashboard com sidebar fixa, cards de resumo, próximos ensaios, pagamentos e clientes recentes.
-Num primeiro momento existiam dados simulados para dar forma ao layout.
+### 2. Criação da tela de acesso
+- criação da tela de login
+- inclusão do fluxo de cadastro
+- disponibilização de uma conta de teste para entrada rápida
 
-## 4. Clientes
-Eu criei a página de clientes com tabela, contagem, botão de adicionar e modal para cadastro/edição.
-Depois deixei esse fluxo persistindo localmente no navegador.
+### 3. Primeira versão do dashboard
+- montagem da sidebar
+- criação de cards de resumo
+- inclusão de blocos de agenda, pagamentos e clientes
 
-## 5. Ensaios
-Eu criei a página de ensaios com filtros por data e modal de agendamento.
-Depois fui expandindo o cadastro de ensaio para incluir:
-- horário
-- local
-- contrato vinculado
-- valor
-- status do pagamento
-- upload inicial de imagens
+### 4. Página de clientes
+- criação da listagem de clientes
+- inclusão de contagem e modal de cadastro/edição
+- persistência dos clientes no navegador
 
-## 6. Portfólio público
-Eu criei a página pública do portfólio com grid quadrado responsivo e preview ampliado.
-Depois transformei essa área em um espaço gerenciável, com:
-- upload de imagens
-- persistência local
-- exclusão
-- arrastar e soltar para reordenar
+### 5. Página de ensaios
+- criação da tela de ensaios
+- inclusão de data, horário, local, contrato, valor e pagamento no cadastro
+- preparação da estrutura para imagens e backend futuro
 
-## 7. Galeria de entrega
-Eu construí a galeria do cliente com:
-- grid quadrado
-- marca d'água
-- seleção de fotos
-- compra individual e em lote
-- cálculo automático do valor
+### 6. Portfólio público
+- criação do grid público responsivo
+- inclusão de preview ampliado
+- evolução para gerenciamento com upload, exclusão e ordenação
 
-## 8. Agenda do fotógrafo
-Eu adicionei primeiro uma agenda dentro do dashboard com calendário, dias com ensaio e disponibilidade por horários.
-Depois percebi que a usabilidade ficaria melhor em uma página separada.
+### 7. Galeria de entrega
+- criação da galeria do cliente
+- adição de marca d'água
+- seleção de fotos e cálculo automático da compra
 
-## 9. Página Minha Agenda
-Eu movi a agenda para uma página própria e adicionei `Minha Agenda` no menu.
-Essa página passou a permitir:
-- navegar entre meses
-- ver dias com ensaio em destaque
-- definir dias da semana trabalhados
-- ativar ou desativar horários
-- enxergar a visão do cliente para cada data
+### 8. Agenda no dashboard
+- primeira implementação da agenda integrada ao dashboard
+- visualização inicial de disponibilidade e ensaios
 
-## 10. Limpeza dos dados fictícios
-Eu removi os ensaios e receitas fake.
-Deixei o sistema pronto para começar vazio e ser preenchido com dados reais do fotógrafo.
+### 9. Página Minha Agenda
+- migração da agenda para uma página própria
+- liberação de configuração por dias e horários
+- visão da disponibilidade real do cliente
 
-## 11. Persistência local
-Eu conectei o projeto a `localStorage` e `IndexedDB` para manter os dados no frontend sem backend:
-- clientes
-- ensaios
-- pagamentos
-- perfil do fotógrafo
-- disponibilidade
-- usuários
-- contratos
-- portfólio
+### 10. Remoção de dados fictícios
+- retirada de receitas e ensaios fake
+- adequação do sistema para começar com base vazia
 
-## 12. Financeiro ligado aos dados reais
-Eu alterei o cadastro do fotógrafo para registrar:
-- quanto ele cobra por ensaio
-- quantos ensaios faz por mês em média
+### 11. Persistência local
+- adoção de `localStorage` para dados principais
+- adoção de `IndexedDB` para o portfólio
 
-Com isso, o dashboard passou a calcular:
-- média estimada mensal
-- meta de ensaios
-- meta de receita
-- cobertura de contratos
+### 12. Financeiro baseado em cadastro real
+- uso do valor por ensaio e média mensal do fotógrafo
+- cálculo de média estimada mensal, metas e cobertura de contratos
 
-## 13. Perfis de usuário
-Eu adaptei o cadastro para dois perfis:
-- fotógrafo
-- cliente
+### 13. Separação de perfis
+- criação de fluxos independentes para fotógrafo e cliente
+- cadastro do fotógrafo com dados operacionais
+- cadastro do cliente orientado ao ensaio
 
-O fotógrafo tem cadastro mais completo.
-O cliente tem fluxo mais rápido para entrar a partir do compartilhamento de ensaio.
+### 14. Área do cliente
+- criação de `Meus Contratos`
+- criação de `Meus Ensaios`
+- exigência de assinatura antes de liberar acesso aos ensaios
 
-## 14. Área do cliente
-Eu criei:
-- `Meus Contratos`
-- `Meus Ensaios`
+### 15. Primeira central de configurações
+- criação de formulários separados por seção
+- integração dessas configurações com dashboard, portfólio e galeria
 
-O cliente precisa assinar o contrato antes de acessar os ensaios.
-Também deixei explícito o nome do fotógrafo na área do cliente.
+### 16. Ajuste do tom da interface administrativa
+- revisão dos textos do dashboard e da conta de teste
+- redução do tom promocional ou exagerado em áreas internas
+- substituição de rótulos por termos mais neutros
 
-## 15. Configurações
-Por fim, eu criei uma página completa de configurações para centralizar:
-- perfil profissional
-- financeiro
-- portfólio público
-- galeria e venda
-- notificações
+### 17. Correções de UTF-8 e textos corrompidos
+- identificação de conteúdo com mojibake
+- correção do `js/app.js`
+- revisão das páginas HTML
+- correção dos textos estáticos do dashboard
 
-Essas configurações passaram a alimentar o restante da interface.
+### 18. Configurações com salvamento único
+- reorganização de `pages/configuracoes.html`
+- substituição de vários formulários por um formulário único
+- criação do botão global `Salvar tudo`
+- feedback único de salvamento
+- atualização centralizada de dashboard, portfólio e galeria após salvar
 
-## 16. Situação atual
-Hoje o projeto está pronto como frontend funcional e navegável, com dados persistidos localmente.
-As próximas etapas ideais são:
-- backend real
-- autenticação real
-- upload em servidor
-- contratos reais
-- vínculo completo entre cliente, ensaio, contrato, pagamento e galeria
+### 19. Cadastro com múltiplos nichos de fotografia
+- substituição do `select` simples por seleção múltipla
+- apresentação dos nichos em lista visual com ícones
+- inclusão de validação exigindo pelo menos um nicho
+- persistência de `specialties` em formato de array
+
+## Situação atual do projeto
+- frontend funcional e navegável
+- persistência local ativa
+- cadastro guiado por perfil
+- agenda configurável
+- dashboard operacional
+- área do cliente com gate por contrato
+- portfólio gerenciável
+- galeria com compra simulada
+- configurações centralizadas
+- textos administrativos revisados
+- encoding corrigido nos arquivos principais

@@ -71,12 +71,25 @@
         ]
     };
 
+    const specialtyOptions = [
+        { value: "Casamentos", title: "Casamentos", description: "Cobertura de cerimônias, making of e festa.", icon: "bi-hearts" },
+        { value: "Retratos", title: "Retratos", description: "Ensaios individuais, editoriais e direção de pose.", icon: "bi-person-bounding-box" },
+        { value: "Família", title: "Família", description: "Sessões familiares, infantis e documentais.", icon: "bi-people" },
+        { value: "Branding", title: "Branding", description: "Imagem profissional para marcas e negócios.", icon: "bi-briefcase" },
+        { value: "Eventos", title: "Eventos", description: "Cobertura corporativa, social e experiências ao vivo.", icon: "bi-calendar-event" },
+        { value: "Newborn", title: "Newborn", description: "Fotografia de recém-nascidos e primeiros meses.", icon: "bi-stars" },
+        { value: "Moda", title: "Moda", description: "Editorial, lookbook e campanhas de coleção.", icon: "bi-handbag" },
+        { value: "Gastronomia", title: "Gastronomia", description: "Pratos, produtos e ambientação de restaurantes.", icon: "bi-cup-hot" },
+        { value: "Arquitetura", title: "Arquitetura", description: "Interiores, imóveis e fotografia de espaços.", icon: "bi-building" },
+        { value: "Outro", title: "Outro", description: "Atendimentos fora dos nichos principais da lista.", icon: "bi-three-dots" }
+    ];
+
     const photographerSteps = [
         { name: "fullName", group: "Identidade", title: "Como você quer ser identificado no sistema?", hint: "Esse nome será usado internamente na conta.", type: "text", placeholder: "Ex.: Helena Duarte", autocomplete: "name" },
         { name: "publicName", group: "Marca", title: "Qual nome público aparece para seus clientes?", hint: "Pode ser seu nome artístico ou o nome do estúdio.", type: "text", placeholder: "Ex.: Helena Duarte Fotografia" },
         { name: "email", group: "Acesso", title: "Qual e-mail vai centralizar os acessos?", hint: "Use um e-mail profissional que você consulta com frequência.", type: "email", placeholder: "voce@studio.com", autocomplete: "email" },
         { name: "password", group: "Segurança", title: "Crie uma senha de acesso.", hint: "Use pelo menos 6 caracteres.", type: "password", placeholder: "Digite sua senha", autocomplete: "new-password" },
-        { name: "specialty", group: "Nicho", title: "Qual é o seu nicho principal?", hint: "Ex.: casamentos, retratos, branding, newborn, eventos.", type: "select", options: ["Casamentos", "Retratos", "Família", "Branding", "Eventos", "Newborn", "Moda", "Outro"] },
+        { name: "specialty", group: "Nichos", title: "Quais nichos de fotografia você atende?", hint: "Selecione todos os nichos que fazem parte do seu trabalho hoje.", type: "choice-multiple", options: specialtyOptions },
         { name: "city", group: "Atendimento", title: "Em qual cidade você atende com mais frequência?", hint: "Isso ajuda a contextualizar seu perfil.", type: "text", placeholder: "Ex.: São Paulo - SP" },
         { name: "sessionPrice", group: "Financeiro", title: "Quanto você cobra, em média, por ensaio?", hint: "Use um valor aproximado do ticket principal.", type: "number", placeholder: "1200", min: "0", step: "0.01" },
         { name: "monthlyAverageSessions", group: "Ritmo", title: "Quantos ensaios você faz por mês, em média?", hint: "Vamos usar isso para estimar metas e previsões.", type: "number", placeholder: "8", min: "0", step: "1" },
@@ -156,6 +169,41 @@
         });
     }
 
+    function renderMultiChoiceStep(step) {
+        const selectedValues = Array.isArray(wizardState.values[step.name]) ? wizardState.values[step.name] : [];
+        inputRoot.innerHTML = '<div class="wizard-choice-list">' + step.options.map((option) => `
+            <button
+                class="wizard-choice-item ${selectedValues.includes(option.value) ? "is-selected" : ""}"
+                type="button"
+                data-multi-choice-name="${step.name}"
+                data-multi-choice-value="${option.value}"
+            >
+                <span class="wizard-choice-item__icon"><i class="bi ${option.icon || "bi-check2-circle"}"></i></span>
+                <span class="wizard-choice-item__body">
+                    <strong>${option.title}</strong>
+                    <span>${option.description}</span>
+                </span>
+            </button>
+        `).join("") + '</div>';
+
+        inputRoot.querySelectorAll("[data-multi-choice-name]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const currentValues = Array.isArray(wizardState.values[step.name]) ? [...wizardState.values[step.name]] : [];
+                const value = button.dataset.multiChoiceValue;
+                const index = currentValues.indexOf(value);
+
+                if (index >= 0) {
+                    currentValues.splice(index, 1);
+                } else {
+                    currentValues.push(value);
+                }
+
+                wizardState.values[step.name] = currentValues;
+                renderStep();
+            });
+        });
+    }
+
     function renderStep() {
         const steps = getSteps();
         if (wizardState.index >= steps.length) {
@@ -169,6 +217,8 @@
 
         if (step.type === "choice") {
             renderChoiceStep(step);
+        } else if (step.type === "choice-multiple") {
+            renderMultiChoiceStep(step);
         } else if (step.type === "select") {
             inputRoot.innerHTML = `
                 <div class="wizard-input">
@@ -237,6 +287,16 @@
                 feedback.textContent = step.name === "role"
                     ? "Escolha seu perfil para continuar."
                     : "Escolha uma opção para continuar.";
+                feedback.style.color = "var(--danger)";
+                return false;
+            }
+            return true;
+        }
+
+        if (step.type === "choice-multiple") {
+            const selectedValues = Array.isArray(wizardState.values[step.name]) ? wizardState.values[step.name] : [];
+            if (!selectedValues.length) {
+                feedback.textContent = "Selecione pelo menos um nicho para continuar.";
                 feedback.style.color = "var(--danger)";
                 return false;
             }
@@ -315,7 +375,12 @@
             publicName: (payload.publicName || "").trim(),
             city: (payload.city || "").trim(),
             instagram: (payload.instagram || "").trim(),
-            specialty: (payload.specialty || "").trim(),
+            specialties: Array.isArray(payload.specialty)
+                ? payload.specialty.map((item) => item.trim()).filter(Boolean)
+                : ((payload.specialty || "").trim() ? [(payload.specialty || "").trim()] : []),
+            specialty: Array.isArray(payload.specialty)
+                ? (payload.specialty[0] || "").trim()
+                : (payload.specialty || "").trim(),
             accessStage: (payload.accessStage || "").trim(),
             shootType: (payload.shootType || "").trim(),
             preferredDate: (payload.preferredDate || "").trim(),
