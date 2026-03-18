@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click Manager | Portfólio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style.css">
+</head>
+<body data-page="portfolio">
+    <main class="public-shell">
+        <header class="portfolio-header">
+            <a class="brand-pill" href="./dashboard.html">Click Manager</a>
+            <div class="portfolio-header__content">
+                <p class="eyebrow">Portfólio público</p>
+                <h1>Helena Duarte</h1>
+                <p>Fotógrafa de retratos, editoriais e narrativas visuais com estética leve, documental e contemporânea.</p>
+                <a class="instagram-link" href="https://instagram.com" target="_blank" rel="noreferrer">instagram.com/helenaduarte</a>
+            </div>
+        </header>
+
+        <section class="portfolio-manager">
+            <div class="section-heading">
+                <div>
+                    <p class="eyebrow">Gerenciamento</p>
+                    <h3>Editar portfólio</h3>
+                </div>
+                <span class="badge" id="portfolioCountBadge">0 imagens</span>
+            </div>
+            <p class="client-meta">Faça upload das suas imagens em alta qualidade e arraste os cards para definir a ordem de exibição.</p>
+            <div class="portfolio-manager__actions">
+                <label class="upload-dropzone" for="portfolioUpload">
+                    <strong>Enviar imagens</strong>
+                    <span>Selecione arquivos JPG, PNG ou WEBP para publicar no portfólio.</span>
+                    <input type="file" id="portfolioUpload" accept="image/*" multiple>
+                </label>
+                <button class="btn btn-ghost" type="button" id="clearPortfolioBtn">Limpar portfólio</button>
+            </div>
+        </section>
+
+        <section class="portfolio-grid" id="portfolioGrid" aria-label="Grid de fotos do portfólio"></section>
+        <div class="portfolio-empty" id="portfolioEmptyState" hidden>
+            <strong>Nenhuma imagem no portfólio</strong>
+            <p>Envie suas fotos para começar a montar a vitrine pública do fotógrafo.</p>
+        </div>
+    </main>
+
+    <div class="lightbox" id="lightbox" aria-hidden="true">
+        <div class="lightbox__backdrop" data-lightbox-close></div>
+        <div class="lightbox__dialog">
+            <button class="icon-btn lightbox__close" type="button" data-lightbox-close aria-label="Fechar preview">✕</button>
+            <img id="lightboxImage" alt="Preview ampliado da foto selecionada">
+        </div>
+    </div>
+
+    <script src="../js/app.js"></script>
+</body>
+</html>

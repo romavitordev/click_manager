@@ -1,0 +1,88 @@
+﻿.auth-shell,
+.app-shell,
+.public-shell,
+.register-shell {
+    min-height: 100vh;
+}
+
+.auth-shell,
+.register-shell {
+    display: grid;
+    grid-template-columns: 1fr;
+}
+
+.app-shell {
+    display: flex;
+}
+
+.app-content {
+    flex: 1;
+    min-width: 0;
+    padding: 24px 16px 40px;
+}
+
+.page-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.content-grid,
+.stats-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.content-grid {
+    grid-template-columns: 1fr;
+}
+
+.stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.public-shell {
+    padding: 20px 16px 56px;
+}
+
+.public-shell--delivery {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+@media (min-width: 768px) {
+    .auth-shell {
+        grid-template-columns: minmax(0, 1.1fr) minmax(420px, 520px);
+    }
+
+    .register-shell {
+        grid-template-columns: minmax(320px, 0.92fr) minmax(0, 1.08fr);
+    }
+
+    .app-content {
+        padding: 28px 28px 48px;
+    }
+
+    .content-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .content-grid--wide {
+        grid-template-columns: 1.2fr 0.8fr;
+    }
+
+    .public-shell {
+        padding: 36px 28px 72px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .app-content {
+        padding: 32px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}

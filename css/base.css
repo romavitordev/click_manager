@@ -1,0 +1,57 @@
+﻿:root {
+    --bg: #f3f6fc;
+    --surface: #ffffff;
+    --surface-soft: #eef2ff;
+    --surface-accent: linear-gradient(135deg, rgba(37, 99, 235, 0.16), rgba(124, 58, 237, 0.18));
+    --text: #122033;
+    --muted: #6b7280;
+    --border: rgba(148, 163, 184, 0.25);
+    --primary: #2563eb;
+    --secondary: #7c3aed;
+    --success: #16a34a;
+    --danger: #dc2626;
+    --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+    --radius-lg: 28px;
+    --radius-md: 20px;
+    --radius-sm: 14px;
+    --sidebar-width: 280px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Manrope", sans-serif;
+    color: var(--text);
+    background:
+        radial-gradient(circle at top left, rgba(124, 58, 237, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(37, 99, 235, 0.18), transparent 34%),
+        var(--bg);
+    min-height: 100vh;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
