@@ -21,7 +21,7 @@ const defaultSettings = {
     sessionPrice: 0,
     monthlyAverageSessions: 0,
     bookingDeposit: 30,
-    acceptedPayments: "Pix, CartÃ£o, Boleto",
+    acceptedPayments: "Pix, Cartão, Boleto",
     paymentDeadline: "7 dias",
     publicName: "",
     publicBio: "",
@@ -172,7 +172,7 @@ function registerUserAccount(payload) {
     if (state.users.some((item) => item.email === email)) {
         return {
             ok: false,
-            message: "JÃ¡ existe uma conta com este e-mail.",
+            message: "Já existe uma conta com este e-mail.",
             color: "var(--danger)"
         };
     }
@@ -183,7 +183,7 @@ function registerUserAccount(payload) {
         if (sessionPrice <= 0 || monthlyAverageSessions <= 0) {
             return {
                 ok: false,
-                message: "Informe valor do ensaio e mÃ©dia mensal para configurar o painel.",
+                message: "Informe valor do ensaio e média mensal para configurar o painel.",
                 color: "var(--danger)"
             };
         }
@@ -233,22 +233,22 @@ function registerUserAccount(payload) {
             id: `CTR-${Date.now()}`,
             clientEmail: email,
             clientName: fullName,
-            photographerName: newUser.photographerHandle || newUser.photographerName || "FotÃ³grafo responsÃ¡vel",
-            shareCode: newUser.shareCode || payload.accessStage?.trim() || payload.shootType?.trim() || "SolicitaÃ§Ã£o direta",
+            photographerName: newUser.photographerHandle || newUser.photographerName || "Fotógrafo responsável",
+            shareCode: newUser.shareCode || payload.accessStage?.trim() || payload.shootType?.trim() || "Solicitação direta",
             status: "Pendente",
             signedAt: null,
             title: payload.accessStage?.trim()
                 ? `Fluxo do cliente: ${payload.accessStage.trim().toLowerCase()}`
                 : payload.shootType?.trim()
                     ? `Contrato para ${payload.shootType.trim().toLowerCase()}`
-                    : "Contrato de prestaÃ§Ã£o de serviÃ§o fotogrÃ¡fico"
+                    : "Contrato de prestação de serviço fotográfico"
         };
         state.contracts.push(contract);
         writeStorage(STORAGE_KEYS.contracts, state.contracts);
         return {
             ok: true,
             user: newUser,
-            message: "Cadastro do cliente concluÃ­do. FaÃ§a login para assinar o contrato e acessar seus ensaios.",
+            message: "Cadastro do cliente concluído. Faça login para assinar o contrato e acessar seus ensaios.",
             color: "var(--success)"
         };
     }
@@ -256,7 +256,7 @@ function registerUserAccount(payload) {
     return {
         ok: true,
         user: newUser,
-        message: "Cadastro criado com sucesso. O painel financeiro jÃ¡ foi configurado com sua mÃ©dia inicial.",
+        message: "Cadastro criado com sucesso. O painel financeiro já foi configurado com sua média inicial.",
         color: "var(--success)"
     };
 }
@@ -841,18 +841,18 @@ function renderDashboard() {
         : 0;
 
     const metrics = [
-        { label: "PrÃ³ximos ensaios", value: state.sessions.length, helper: "Agenda registrada no sistema" },
+        { label: "Próximos ensaios", value: state.sessions.length, helper: "Agenda registrada no sistema" },
         { label: "Pagamentos pendentes", value: pendingPaymentItems.length, helper: "Recebimentos vinculados aos ensaios" },
         { label: "Clientes ativos", value: state.clients.filter((client) => client.status === "Ativo").length, helper: "Base com contrato ativo" },
-        { label: "MÃ©dia estimada mensal", value: formatCurrency(estimatedRevenue), helper: "Baseada no cadastro do fotÃ³grafo" }
+        { label: "Média estimada mensal", value: formatCurrency(estimatedRevenue), helper: "Baseada no cadastro do fotógrafo" }
     ];
 
     if (heroMetricLabel && heroMetricValue && heroMetricHelper) {
-        heroMetricLabel.textContent = "MÃ©dia mensal estimada";
+        heroMetricLabel.textContent = "Média mensal estimada";
         heroMetricValue.textContent = formatCurrency(estimatedRevenue);
         heroMetricHelper.textContent = state.profile.monthlyAverageSessions > 0
-            ? `${state.profile.monthlyAverageSessions} ensaios/mÃªs x ${formatCurrency(state.profile.sessionPrice)} por ensaio.`
-            : "Complete o cadastro do fotÃ³grafo para gerar a mÃ©dia mensal.";
+            ? `${state.profile.monthlyAverageSessions} ensaios/mês x ${formatCurrency(state.profile.sessionPrice)} por ensaio.`
+            : "Complete o cadastro do fotógrafo para gerar a média mensal.";
     }
 
     summaryCards.innerHTML = metrics.map((item) => `
@@ -866,16 +866,16 @@ function renderDashboard() {
     upcomingSessions.innerHTML = state.sessions.length ? state.sessions.slice(0, 3).map((session) => `
         <div class="stack-item">
             <strong>${session.title}</strong>
-            <div class="stack-item__meta">${session.client} Â· ${session.date} Â· ${session.time}</div>
-            <div class="stack-item__meta">${session.location} Â· ${session.status}</div>
+            <div class="stack-item__meta">${session.client} · ${session.date} · ${session.time}</div>
+            <div class="stack-item__meta">${session.location} · ${session.status}</div>
         </div>
     `).join("") : `<div class="stack-item"><strong>Nenhum ensaio cadastrado</strong><div class="stack-item__meta">Adicione ensaios reais para visualizar sua agenda.</div></div>`;
 
     pendingPayments.innerHTML = pendingPaymentItems.length ? pendingPaymentItems.map((payment) => `
         <div class="stack-item">
             <strong>${payment.amount}</strong>
-            <div class="stack-item__meta">${payment.client} Â· ${payment.label}</div>
-            <div class="stack-item__meta">${payment.paymentStatus} Â· ${payment.due}</div>
+            <div class="stack-item__meta">${payment.client} · ${payment.label}</div>
+            <div class="stack-item__meta">${payment.paymentStatus} · ${payment.due}</div>
         </div>
     `).join("") : `<div class="stack-item"><strong>Nenhum pagamento pendente</strong><div class="stack-item__meta">Cadastre valores reais conforme seus contratos.</div></div>`;
 
@@ -886,7 +886,7 @@ function renderDashboard() {
                 <span class="badge">${client.status}</span>
             </div>
             <div class="client-meta">${client.email}</div>
-            <div class="client-meta">${client.type} Â· Ãšltimo ensaio ${client.lastSession}</div>
+            <div class="client-meta">${client.type} · Último ensaio ${client.lastSession}</div>
         </div>
     `).join("") : `<div class="client-item"><strong>Nenhum cliente recente</strong><div class="client-meta">Cadastre clientes para alimentar o painel.</div></div>`;
 
@@ -894,11 +894,11 @@ function renderDashboard() {
         agendaHighlights.innerHTML = state.sessions.length ? state.sessions.slice(0, 4).map((session) => `
             <div class="stack-item">
                 <strong>${session.title}</strong>
-                <div class="stack-item__meta">${session.date} Â· ${session.time}</div>
-                <div class="stack-item__meta">${session.client} Â· ${session.location}</div>
+                <div class="stack-item__meta">${session.date} · ${session.time}</div>
+                <div class="stack-item__meta">${session.client} · ${session.location}</div>
                 <div class="stack-item__meta">${session.contract ? `Contrato ${session.contract}` : "Sem contrato vinculado"}</div>
             </div>
-        `).join("") : `<div class="stack-item"><strong>Sua agenda estÃ¡ limpa</strong><div class="stack-item__meta">Use a pÃ¡gina de ensaios para cadastrar compromissos reais.</div></div>`;
+        `).join("") : `<div class="stack-item"><strong>Sua agenda está limpa</strong><div class="stack-item__meta">Use a página de ensaios para cadastrar compromissos reais.</div></div>`;
     }
 
     if (financeChart && financialPeriodBadge) {
@@ -938,7 +938,7 @@ function renderAgendaControls() {
                 <div class="weekday-card__top">
                     <div>
                         <strong>${name}</strong>
-                        <div class="client-meta">${config.enabled ? "DisponÃ­vel para agendamento" : "Fora da agenda"}</div>
+                        <div class="client-meta">${config.enabled ? "Disponível para agendamento" : "Fora da agenda"}</div>
                     </div>
                     <label class="switch" aria-label="Ativar ${name}">
                         <input type="checkbox" data-weekday-toggle="${weekday}" ${config.enabled ? "checked" : ""}>
@@ -946,7 +946,7 @@ function renderAgendaControls() {
                     </label>
                 </div>
                 <div class="slot-group">
-                    <span class="client-meta">HorÃ¡rios liberados</span>
+                    <span class="client-meta">Horários liberados</span>
                     <div class="slot-chips">
                         ${defaultSlots.map((slot) => `
                             <button
@@ -1043,7 +1043,7 @@ function renderAgendaCalendar() {
                 <div class="calendar-day__meta">
                     ${sessions.length ? `<span class="calendar-chip calendar-chip--session">${sessions.length} ensaio${sessions.length > 1 ? "s" : ""}</span>` : ""}
                     ${availability.enabled
-                        ? `<span class="calendar-chip calendar-chip--available">${availability.availableSlots.length} horÃ¡rio${availability.availableSlots.length !== 1 ? "s" : ""}</span>`
+                        ? `<span class="calendar-chip calendar-chip--available">${availability.availableSlots.length} horário${availability.availableSlots.length !== 1 ? "s" : ""}</span>`
                         : `<span class="calendar-chip">${weekdayNames[currentDate.getDay()].slice(0, 3)} bloqueado</span>`
                     }
                 </div>
@@ -1075,24 +1075,24 @@ function renderSelectedDateAvailability() {
     label.textContent = formatDateLabel(dateString);
 
     if (!availability.enabled) {
-        status.textContent = "Este dia estÃ¡ fechado na agenda do fotÃ³grafo.";
+        status.textContent = "Este dia está fechado na agenda do fotógrafo.";
         slotsRoot.innerHTML = `<span class="slot-chip is-disabled">Sem disponibilidade</span>`;
         return;
     }
 
     if (availability.availableSlots.length === 0) {
         status.textContent = sessions.length
-            ? "Todos os horÃ¡rios de trabalho deste dia jÃ¡ estÃ£o ocupados."
-            : "Nenhum horÃ¡rio foi liberado pelo fotÃ³grafo para esta data.";
+            ? "Todos os horários de trabalho deste dia já estão ocupados."
+            : "Nenhum horário foi liberado pelo fotógrafo para esta data.";
     } else {
         status.textContent = sessions.length
-            ? "HorÃ¡rios disponÃ­veis jÃ¡ descontam os ensaios agendados."
-            : "Dia disponÃ­vel para novos agendamentos.";
+            ? "Horários disponíveis já descontam os ensaios agendados."
+            : "Dia disponível para novos agendamentos.";
     }
 
     const availableMarkup = availability.availableSlots.map((slot) => `<span class="slot-chip is-active">${slot}</span>`);
     const bookedMarkup = availability.bookedSlots.map((slot) => `<span class="slot-chip is-booked">${slot}</span>`);
-    slotsRoot.innerHTML = [...availableMarkup, ...bookedMarkup].join("") || `<span class="slot-chip is-disabled">Sem horÃ¡rios livres</span>`;
+    slotsRoot.innerHTML = [...availableMarkup, ...bookedMarkup].join("") || `<span class="slot-chip is-disabled">Sem horários livres</span>`;
 }
 
 function setupAgendaNavigation() {
@@ -1132,11 +1132,11 @@ function renderAgenda() {
     renderSelectedDateAvailability();
 
     if (calendarRoot.innerHTML.trim() === "") {
-        calendarRoot.innerHTML = `<div class="stack-item"><strong>CalendÃ¡rio indisponÃ­vel</strong><div class="stack-item__meta">Recarregue a pÃ¡gina para aplicar a configuraÃ§Ã£o padrÃ£o.</div></div>`;
+        calendarRoot.innerHTML = `<div class="stack-item"><strong>Calendário indisponível</strong><div class="stack-item__meta">Recarregue a página para aplicar a configuração padrão.</div></div>`;
     }
 
     if (settingsRoot && settingsRoot.innerHTML.trim() === "") {
-        settingsRoot.innerHTML = `<div class="stack-item"><strong>ConfiguraÃ§Ãµes indisponÃ­veis</strong><div class="stack-item__meta">A agenda foi reinicializada com a configuraÃ§Ã£o padrÃ£o.</div></div>`;
+        settingsRoot.innerHTML = `<div class="stack-item"><strong>Configurações indisponíveis</strong><div class="stack-item__meta">A agenda foi reinicializada com a configuração padrão.</div></div>`;
     }
 }
 
@@ -1153,9 +1153,9 @@ function renderClientContracts() {
     const contract = getCurrentClientContract();
     if (!client || !contract) {
         title.textContent = "Meus Contratos";
-        subtitle.textContent = "FaÃ§a login pelo link compartilhado para acessar o contrato do seu ensaio.";
+        subtitle.textContent = "Faça login pelo link compartilhado para acessar o contrato do seu ensaio.";
         badge.textContent = "Sem acesso";
-        card.innerHTML = `<div class="stack-item"><strong>Nenhum contrato disponÃ­vel</strong><div class="stack-item__meta">Entre com uma conta de cliente para visualizar e assinar.</div></div>`;
+        card.innerHTML = `<div class="stack-item"><strong>Nenhum contrato disponível</strong><div class="stack-item__meta">Entre com uma conta de cliente para visualizar e assinar.</div></div>`;
         return;
     }
 
@@ -1165,7 +1165,7 @@ function renderClientContracts() {
     card.innerHTML = `
         <div class="stack-item">
             <strong>${contract.title}</strong>
-            <div class="stack-item__meta">FotÃ³grafo: ${contract.photographerName}</div>
+            <div class="stack-item__meta">Fotógrafo: ${contract.photographerName}</div>
             <div class="stack-item__meta">Cliente: ${contract.clientName}</div>
             <div class="stack-item__meta">Origem do acesso: ${contract.shareCode}</div>
             <div class="stack-item__meta">Status atual: ${contract.status}</div>
@@ -1198,18 +1198,18 @@ function renderClientSessions() {
     const client = getCurrentClient();
     const contract = getCurrentClientContract();
     if (!client || !contract) {
-        gate.innerHTML = `<div class="stack-item"><strong>Acesso indisponÃ­vel</strong><div class="stack-item__meta">FaÃ§a login com uma conta de cliente para visualizar seus ensaios.</div></div>`;
+        gate.innerHTML = `<div class="stack-item"><strong>Acesso indisponível</strong><div class="stack-item__meta">Faça login com uma conta de cliente para visualizar seus ensaios.</div></div>`;
         return;
     }
 
     title.textContent = `Meus Ensaios | ${contract.photographerName}`;
-    subtitle.textContent = `Ãrea vinculada ao fotÃ³grafo ${contract.photographerName}.`;
+    subtitle.textContent = `Área vinculada ao fotógrafo ${contract.photographerName}.`;
 
     if (contract.status !== "Assinado") {
         gate.innerHTML = `
             <div class="stack-item">
                 <strong>Assinatura pendente</strong>
-                <div class="stack-item__meta">VocÃª precisa assinar o contrato em Meus Contratos antes de acessar os ensaios.</div>
+                <div class="stack-item__meta">Você precisa assinar o contrato em Meus Contratos antes de acessar os ensaios.</div>
                 <a class="btn btn-primary" href="./meus-contratos.html">Ir para Meus Contratos</a>
             </div>
         `;
@@ -1226,13 +1226,13 @@ function renderClientSessions() {
                         <strong>${session.title}</strong>
                         <span class="badge">${session.status}</span>
                     </div>
-                    <div class="client-meta">${session.date} Â· ${session.time} Â· ${session.location}</div>
-                    <div class="client-meta">FotÃ³grafo: ${contract.photographerName}</div>
-                    <div class="client-meta">Contrato: ${session.contract || "NÃ£o vinculado"} Â· Imagens enviadas: ${session.imageCount || 0}</div>
+                    <div class="client-meta">${session.date} · ${session.time} · ${session.location}</div>
+                    <div class="client-meta">Fotógrafo: ${contract.photographerName}</div>
+                    <div class="client-meta">Contrato: ${session.contract || "Não vinculado"} · Imagens enviadas: ${session.imageCount || 0}</div>
                 </div>
             `).join("")}
         </div>
-    ` : `<div class="stack-item"><strong>Nenhum ensaio disponÃ­vel ainda</strong><div class="stack-item__meta">Assim que o fotÃ³grafo cadastrar ou compartilhar seus ensaios, eles aparecerÃ£o aqui.</div></div>`;
+    ` : `<div class="stack-item"><strong>Nenhum ensaio disponível ainda</strong><div class="stack-item__meta">Assim que o fotógrafo cadastrar ou compartilhar seus ensaios, eles aparecerão aqui.</div></div>`;
 }
 
 function renderClientDashboard() {
@@ -1336,8 +1336,8 @@ function updateSettingsSummary() {
     }
     value.textContent = getPhotographerDisplayName();
     helper.textContent = state.settings.sessionPrice > 0
-        ? `${formatCurrency(Number(state.settings.sessionPrice))} por ensaio Â· mÃ©dia de ${state.settings.monthlyAverageSessions || 0} ensaios/mÃªs.`
-        : "Preencha as seÃ§Ãµes abaixo para personalizar a plataforma.";
+        ? `${formatCurrency(Number(state.settings.sessionPrice))} por ensaio · média de ${state.settings.monthlyAverageSessions || 0} ensaios/mês.`
+        : "Preencha as seções abaixo para personalizar a plataforma.";
 }
 
 function setupSettings() {
@@ -1470,7 +1470,7 @@ function renderClients() {
                 </div>
             </td>
         </tr>
-    `).join("") : `<tr><td colspan="6">Nenhum cliente cadastrado. Use o botÃ£o "Adicionar cliente" para comeÃ§ar.</td></tr>`;
+    `).join("") : `<tr><td colspan="6">Nenhum cliente cadastrado. Use o botão "Adicionar cliente" para começar.</td></tr>`;
 
     tableBody.querySelectorAll("[data-edit-client]").forEach((button) => {
         button.addEventListener("click", () => openClientModal(Number(button.dataset.editClient)));
@@ -1565,13 +1565,13 @@ function renderSessions() {
                     <strong>${session.title}</strong>
                     <span class="badge">${session.status}</span>
                 </div>
-                <div class="client-meta">${session.client} Â· ${session.date} Â· ${session.time}</div>
+                <div class="client-meta">${session.client} · ${session.date} · ${session.time}</div>
                 <div class="client-meta">${session.location}</div>
-                <div class="client-meta">Contrato: ${session.contract || "NÃ£o vinculado"} Â· Valor: ${formatCurrency(getSessionPrice(session))}</div>
-                <div class="client-meta">Pagamento: ${session.paymentStatus || "Pendente"} Â· Imagens: ${session.imageCount || 0}</div>
+                <div class="client-meta">Contrato: ${session.contract || "Não vinculado"} · Valor: ${formatCurrency(getSessionPrice(session))}</div>
+                <div class="client-meta">Pagamento: ${session.paymentStatus || "Pendente"} · Imagens: ${session.imageCount || 0}</div>
             </article>
         `).join("")
-        : `<article class="session-item"><strong>Nenhum ensaio cadastrado</strong><div class="client-meta">Crie seus prÃ³ximos compromissos para alimentar a agenda.</div></article>`;
+        : `<article class="session-item"><strong>Nenhum ensaio cadastrado</strong><div class="client-meta">Crie seus próximos compromissos para alimentar a agenda.</div></article>`;
 }
 
 function setupSessions() {
@@ -1633,14 +1633,14 @@ async function renderPortfolio() {
     }
 
     if (portfolioTitle) {
-        portfolioTitle.textContent = state.settings.publicName || "Seu PortfÃ³lio";
+        portfolioTitle.textContent = state.settings.publicName || "Seu Portfólio";
     }
     if (portfolioBio) {
-        portfolioBio.textContent = state.settings.publicBio || "Atualize sua bio em ConfiguraÃ§Ãµes para apresentar melhor seu trabalho.";
+        portfolioBio.textContent = state.settings.publicBio || "Atualize sua bio em Configurações para apresentar melhor seu trabalho.";
     }
     if (portfolioInstagram) {
         const handle = state.settings.publicInstagram || state.settings.instagram || "";
-        portfolioInstagram.textContent = handle || "Adicione seu Instagram em ConfiguraÃ§Ãµes";
+        portfolioInstagram.textContent = handle || "Adicione seu Instagram em Configurações";
         portfolioInstagram.href = handle ? `https://instagram.com/${handle.replace("@", "")}` : "#";
     }
 
